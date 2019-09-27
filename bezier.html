@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<style>
+    #canvas {
+        position: absolute;
+    }
+</style>
+
+<body>
+    <canvas id="canvas" width="800" height="500"></canvas>
+
+    <script>
+        var canvas = document.getElementById('canvas');
+        var context = canvas.getContext('2d');
+        var drag = null;
+        init()
+
+        //初始化点
+        function init(quadratic) {
+            //两端顶点
+            point = {
+                p1: {
+                    x: 100,
+                    y: 250
+                },
+                p2: {
+                    x: 400,
+                    y: 250
+                }
+            }
+            point.cp1 = {
+                    x: 150,
+                    y: 100
+                },
+                point.cp2 = {
+                    x: 350,
+                    y: 100
+                },
+
+
+                //默认样式
+
+                style = {
+                    line: {
+                        width: 6,
+                        color: 'red'
+                    },
+
+                    cpline: {
+                        width: 2,
+                        color: '#777'
+                    },
+                    point: {
+                        radius: 10,
+                        width: 2,
+                        color: 'rgb(55, 255, 55)',
+                        fill: 'rgba(102, 217, 255 , 0.7)',
+                        arc1: 0,
+                        arc2: Math.PI * 2
+                    }
+                }
+
+            canvas.onmousedown = dragStart;
+            canvas.onmousemove = dragging;
+            canvas.onmouseup = dragEnd;
+            DrawCanvas();
+        }
+
+        function DrawCanvas() {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+
+            context.lineWidth = style.cpline.width;
+            context.strokeStyle = style.cpline.color;
+            context.beginPath();
+            context.moveTo(point.p1.x, point.p1.y);
+            context.lineTo(point.cp1.x, point.cp1.y);
+            context.moveTo(point.p2.x, point.p2.y);
+            context.lineTo(point.cp2.x, point.cp2.y);
+            context.stroke();
+
+            context.lineWidth = style.line.width;
+            context.strokeStyle = style.line.color;
+            context.beginPath();
+            context.moveTo(point.p1.x, point.p1.y);
+            context.bezierCurveTo(point.cp1.x, point.cp1.y, point.cp2.x, point.cp2.y, point.p2.x, point.p2.y);
+            context.stroke();
+
+            for (const p in point) {
+                context.lineWidth = style.point.width;
+                context.strokeStyle = style.point.color;
+                context.fillStyle = style.point.fill;
+                context.beginPath();
+
+                context.arc(point[p].x, point[p].y, style.point.radius, style.point.arc1, style.point.arc2)
+                context.fill();
+                context.stroke();
+
+            }
+        }
+        //判断是否在拖拽点里，开始拖拽
+        function dragStart(e) {
+            e = MousePos(e);
+            console.log(e);
+            var dx,
+                dy;
+            for (var p in point) {
+                dx = point[p].x - e.x;
+                dy = point[p].y - e.y;
+                if ((dx * dx) + (dy * dy) < style.point.radius * style.point.radius) {
+                    console.log(1);
+                    drag = p;
+                    dPoint = e;
+                    return;
+                }
+            }
+        }
+
+        //拖拽
+        function dragging(e) {
+            if (drag) {
+                e = MousePos(e);
+                point[drag].x += e.x - dPoint.x;
+                point[drag].y += e.y - dPoint.y;
+                dPoint = e;
+                DrawCanvas();
+            }
+        }
+
+        //结束
+        function dragEnd(e) {
+            drag = null;
+            DrawCanvas();
+        }
+
+        //获取当前鼠标相对于画布的坐标
+        function MousePos(e) {
+            e = e ? e : window.event;
+            return {
+                x: e.pageX - canvas.offsetLeft,
+                y: e.pageY - canvas.offsetTop
+
+            }
+        }
+
+        
+    </script>
+</body>
+
+</html>
